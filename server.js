@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const { Readable } = require("stream");
+const path = require("path");
 const config = require("./config");
 const { SlidingWindowLimiter } = require("./lib/ratelimit");
 const { transformCompletion, SseRewriter } = require("./lib/reasoning");
@@ -95,6 +96,10 @@ async function fetchUpstream(path, init) {
   }
   throw lastError || new Error("Upstream request failed after retries");
 }
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok", uptimeSeconds: Math.floor(process.uptime()) });
