@@ -36,7 +36,7 @@ function apiError(res, status, message, type, code) {
 function requireAuth(req, res, next) {
   if (config.proxyKeys.length === 0) return next();
   if (config.proxyKeys.includes(clientKey(req))) return next();
-  return apiError(res, 401, "Invalid or missing API key.", "authentication_error", "invalid_api_key");
+  return apiError(res, 401, "The server is locked behind a key. Contact @veerthesani to get access.", "authentication_error", "invalid_api_key");
 }
 
 function rateLimit(req, res, next) {
@@ -174,7 +174,7 @@ app.post("/v1/chat/completions", requireAuth, rateLimit, async (req, res) => {
     let detail = null;
     try {
       detail = await upstream.json();
-    } catch {}
+    } catch { }
     logRequest(req, upstream.status, body.model, started);
     if (detail) return res.status(upstream.status).json(detail);
     return apiError(res, upstream.status, "Upstream stream failed to start.", "upstream_error");
