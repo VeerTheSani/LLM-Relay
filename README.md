@@ -44,7 +44,7 @@ Test it:
 curl http://localhost:3000/health
 ```
 
-### Render (free tier)
+### Render (your only option if you are jobless)
 
 1. Push this repo to GitHub.
 2. On [render.com](https://render.com): **New → Web Service → connect the repo**.
@@ -164,3 +164,5 @@ Reasoning models emit two text channels: the visible answer (`content`) and the 
 ## License
 
 MIT
+
+Veer Rabari
