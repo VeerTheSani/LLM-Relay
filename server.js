@@ -171,7 +171,7 @@ app.post("/v1/chat/completions", requireAuth, rateLimit, async (req, res) => {
       detail = await upstream.json();
     } catch {}
     logRequest(req, upstream.status, body.model, started);
-    if (detail && detail.error) return res.status(upstream.status).json(detail);
+    if (detail) return res.status(upstream.status).json(detail);
     return apiError(res, upstream.status, "Upstream stream failed to start.", "upstream_error");
   }
 
