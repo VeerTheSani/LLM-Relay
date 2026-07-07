@@ -1,0 +1,17 @@
+{
+  "name": "llm-relay",
+  "version": "1.0.0",
+  "description": "Lightweight self-hosted OpenAI-compatible gateway for any OpenAI-style LLM API",
+  "main": "server.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  }
+}
