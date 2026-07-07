@@ -1,3 +1,5 @@
+lib/
+
 class SlidingWindowLimiter {
   constructor(limitPerWindow, windowMs = 60000) {
     this.limit = limitPerWindow;
