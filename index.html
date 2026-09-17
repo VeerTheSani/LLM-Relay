@@ -3,20 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LLM Relay Gateway</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>LLM Relay Gateway | Live Model Playground</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #0f172a;
-            --glass-bg: rgba(30, 41, 59, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --text-main: #f8fafc;
+            --bg-base: #090d16;
+            --bg-card: rgba(18, 25, 38, 0.78);
+            --bg-card-hover: rgba(26, 36, 54, 0.85);
+            --bg-input: rgba(11, 16, 26, 0.7);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --border-focus: #38bdf8;
+            --text-main: #f1f5f9;
             --text-muted: #94a3b8;
-            --accent: #38bdf8;
-            --accent-glow: rgba(56, 189, 248, 0.5);
-            --success: #10b981;
+            --text-dim: #64748b;
+            --accent-cyan: #38bdf8;
+            --accent-glow: rgba(56, 189, 248, 0.25);
+            --accent-green: #10b981;
+            --accent-green-glow: rgba(16, 185, 129, 0.25);
+            --accent-amber: #f59e0b;
+            --accent-red: #ef4444;
+            --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'Fira Code', monospace;
         }
-        
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -24,184 +35,1225 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-dark);
+            font-family: var(--font-main);
+            background-color: var(--bg-base);
             color: var(--text-main);
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.05) 0%, transparent 60%);
+            background-attachment: fixed;
+            padding: 24px 16px;
+        }
+
+        .layout-wrapper {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Top Bar */
+        .topbar {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            border-radius: 18px;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #0284c7, #10b981);
+            display: flex;
             align-items: center;
             justify-content: center;
-            background-image: 
-                radial-gradient(circle at 15% 50%, rgba(56, 189, 248, 0.15), transparent 25%),
-                radial-gradient(circle at 85% 30%, rgba(16, 185, 129, 0.15), transparent 25%);
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
         }
 
-        .container {
-            max-width: 600px;
-            width: 90%;
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 40px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            transform: translateY(0);
-            animation: float 6s ease-in-out infinite;
+        .brand-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(90deg, #f8fafc, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--glass-border);
-        }
-
-        h1 {
-            font-size: 1.5rem;
+        .brand-tag {
+            font-size: 0.72rem;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: rgba(56, 189, 248, 0.12);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(56, 189, 248, 0.25);
             font-weight: 600;
-            letter-spacing: -0.025em;
-        }
-
-        .status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: var(--success);
-            background: rgba(16, 185, 129, 0.1);
-            padding: 6px 12px;
-            border-radius: 9999px;
-            border: 1px solid rgba(16, 185, 129, 0.2);
-        }
-
-        .pulse {
-            width: 8px;
-            height: 8px;
-            background-color: var(--success);
-            border-radius: 50%;
-            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-            animation: pulsing 2s infinite;
-        }
-
-        @keyframes pulsing {
-            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-        }
-
-        .section {
-            margin-bottom: 25px;
-        }
-
-        .section h2 {
-            font-size: 1rem;
-            color: var(--text-muted);
-            margin-bottom: 15px;
-            font-weight: 400;
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
 
-        .endpoint {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 12px 16px;
-            border-radius: 12px;
-            font-family: monospace;
-            font-size: 0.9rem;
-            color: var(--accent);
-            border: 1px solid rgba(56, 189, 248, 0.1);
+        .top-indicators {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-            transition: all 0.3s ease;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
-        .endpoint:hover {
-            border-color: var(--accent);
-            box-shadow: 0 0 15px var(--accent-glow);
-            transform: translateX(5px);
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--accent-green);
+            background: rgba(16, 185, 129, 0.1);
+            padding: 6px 14px;
+            border-radius: 9999px;
+            border: 1px solid rgba(16, 185, 129, 0.25);
         }
 
-        .method {
-            background: var(--accent);
-            color: #000;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: bold;
-            font-size: 0.75rem;
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--accent-green);
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            animation: pulse-ring 2s infinite;
         }
 
-        .method.post { background: #10b981; }
-        .method.get { background: #38bdf8; }
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
 
-        .instructions {
-            line-height: 1.6;
+        .uptime-pill {
+            font-size: 0.78rem;
             color: var(--text-muted);
-            font-size: 0.95rem;
+            background: var(--bg-input);
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-glass);
+            font-family: var(--font-mono);
         }
 
-        .instructions strong {
-            color: var(--text-main);
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.15fr;
+            gap: 20px;
         }
 
-        .footer {
-            margin-top: 30px;
-            text-align: center;
+        @media (max-width: 960px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Glass Panel */
+        .panel {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .panel-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #fff;
+        }
+
+        .panel-subtitle {
             font-size: 0.8rem;
             color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* Form Controls */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        @media (max-width: 540px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        label {
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .label-hint {
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            font-weight: 400;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        textarea,
+        select {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border-glass);
+            color: var(--text-main);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        textarea:focus,
+        select:focus {
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        textarea {
+            font-family: var(--font-main);
+            font-size: 0.88rem;
+            resize: vertical;
+            min-height: 80px;
+            line-height: 1.5;
+        }
+
+        /* Model Preset Chips */
+        .preset-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .preset-chip {
+            background: rgba(56, 189, 248, 0.08);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            color: var(--accent-cyan);
+            font-size: 0.72rem;
+            font-family: var(--font-mono);
+            padding: 4px 9px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .preset-chip:hover {
+            background: rgba(56, 189, 248, 0.2);
+            border-color: var(--accent-cyan);
+            transform: translateY(-1px);
+        }
+
+        .preset-chip.active {
+            background: var(--accent-cyan);
+            color: #000;
+            font-weight: 600;
+        }
+
+        .preset-chip.working {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.3);
+            color: #34d399;
+        }
+        .preset-chip.working:hover {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: var(--accent-green);
+        }
+
+        /* Sliders and Toggles */
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border-glass);
+        }
+
+        .control-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .control-item span {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .toggle-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            color: var(--text-main);
+            margin-top: 4px;
+        }
+
+        input[type="checkbox"] {
+            accent-color: var(--accent-cyan);
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        /* Action Buttons */
+        .button-bar {
+            display: flex;
+            gap: 10px;
+            margin-top: 6px;
+        }
+
+        .btn {
+            flex: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            outline: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            box-shadow: 0 6px 20px rgba(56, 189, 248, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: var(--bg-input);
+            color: var(--text-muted);
+            border: 1px solid var(--border-glass);
+            flex: 0 0 auto;
+        }
+
+        .btn-secondary:hover {
+            color: var(--text-main);
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Right Panel: Console / Output */
+        .console-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            font-size: 0.72rem;
+            font-family: var(--font-mono);
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .badge-idle {
+            background: rgba(148, 163, 184, 0.12);
+            color: var(--text-dim);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .badge-loading {
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            animation: pulse-ring 1.5s infinite;
+        }
+
+        .badge-200 {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .badge-error {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--accent-red);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .tab-bar {
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px solid var(--border-glass);
+            padding-bottom: 8px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 500;
+            padding: 5px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .tab-btn.active {
+            background: rgba(56, 189, 248, 0.12);
+            color: var(--accent-cyan);
+        }
+
+        .output-box {
+            background: #06090e;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            padding: 16px;
+            font-family: var(--font-mono);
+            font-size: 0.86rem;
+            line-height: 1.6;
+            min-height: 280px;
+            max-height: 480px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+            position: relative;
+            color: #e2e8f0;
+        }
+
+        .output-box::-webkit-scrollbar {
+            width: 6px;
+        }
+        .output-box::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        .placeholder-text {
+            color: var(--text-dim);
+            font-style: italic;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 240px;
+            text-align: center;
+            font-family: var(--font-main);
+            font-size: 0.9rem;
+        }
+
+        .cursor-blink {
+            display: inline-block;
+            width: 7px;
+            height: 14px;
+            background: var(--accent-cyan);
+            margin-left: 3px;
+            vertical-align: middle;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .metric-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            padding-top: 10px;
+            border-top: 1px solid var(--border-glass);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .metric-group {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .metric-item span {
+            color: #fff;
+            font-weight: 600;
+            font-family: var(--font-mono);
+        }
+
+        /* Quick Info Bar */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 14px;
+        }
+
+        .info-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: 14px;
+            padding: 14px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .info-title {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .info-value {
+            font-size: 0.88rem;
+            font-family: var(--font-mono);
+            color: var(--accent-cyan);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Error alert */
+        .alert-box {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-size: 0.82rem;
+            color: #fca5a5;
+            display: none;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .alert-box.show {
+            display: flex;
+        }
+
+        .alert-title {
+            font-weight: 600;
+            color: #f87171;
+            margin-bottom: 2px;
+        }
+
+        /* Snippet Modal / Code Preview */
+        .code-snippet-box {
+            background: #06090e;
+            border: 1px solid var(--border-glass);
+            border-radius: 10px;
+            padding: 12px;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: #cbd5e1;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #fff;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            font-size: 0.78rem;
+            color: var(--text-dim);
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>LLM Relay Gateway</h1>
-            <div class="status">
-                <div class="pulse"></div>
-                SYSTEM ONLINE
+
+<div class="layout-wrapper">
+    <!-- Topbar -->
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-logo">⚡</div>
+            <div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <h1 class="brand-title">LLM Relay Gateway</h1>
+                    <span class="brand-tag">v2.0 Live</span>
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Secure Upstream NVIDIA NIM Proxy</div>
             </div>
         </div>
-
-        <div class="section">
-            <h2>Available Endpoints</h2>
-            <div class="endpoint">
-                <span class="method post">POST</span> /v1/chat/completions
+        <div class="top-indicators">
+            <div class="status-badge" id="gatewayHealthBadge">
+                <div class="pulse-dot" id="healthDot"></div>
+                <span id="healthText">CHECKING...</span>
             </div>
-            <div class="endpoint">
-                <span class="method get">GET</span> /v1/models
-            </div>
-            <div class="endpoint">
-                <span class="method get">GET</span> /stats
-            </div>
-            <div class="endpoint">
-                <span class="method get">GET</span> /health
-            </div>
+            <div class="uptime-pill" id="uptimePill">Uptime: --</div>
+            <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.75rem;" onclick="checkHealthAndStats()">🔄 Refresh</button>
         </div>
+    </header>
 
-        <div class="section">
-            <h2>Quick Setup</h2>
-            <p class="instructions">
-                1. Set API type to <strong>Proxy</strong> in your client.<br>
-                2. Set Proxy URL to your gateway ending in: <strong>/v1/chat/completions</strong><br>
-                3. Use your custom <strong>Proxy Key</strong> as the API Key.<br>
-                4. Select an exact upstream model ID.
-            </p>
+    <!-- Main Grid -->
+    <main class="main-grid">
+        <!-- Left: Model Testing Controls -->
+        <section class="panel">
+            <div class="panel-header">
+                <div>
+                    <h2 class="panel-title">🧪 Model Taste Tester</h2>
+                    <p class="panel-subtitle">Test any NVIDIA NIM model directly through your deployed proxy</p>
+                </div>
+            </div>
+
+            <!-- Error Banner -->
+            <div class="alert-box" id="errorBanner">
+                <div style="font-size: 1.1rem;">⚠️</div>
+                <div>
+                    <div class="alert-title" id="errorTitle">Request Issue</div>
+                    <div id="errorMessage">Details will appear here.</div>
+                </div>
+            </div>
+
+            <!-- Gateway URL & Proxy Key -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="gatewayUrl">
+                        Gateway URL
+                        <span class="label-hint">Default is this origin</span>
+                    </label>
+                    <input type="text" id="gatewayUrl" placeholder="https://llm-relay-veer.onrender.com">
+                </div>
+                <div class="form-group">
+                    <label for="proxyKey">
+                        Proxy Key
+                        <span class="label-hint">Bearer Auth</span>
+                    </label>
+                    <input type="password" id="proxyKey" value="sky" placeholder="sky">
+                </div>
+            </div>
+
+            <!-- Model Selection -->
+            <div class="form-group">
+                <label for="modelName">
+                    Model Name
+                    <span class="label-hint"><a href="javascript:void(0)" onclick="loadAvailableModels()" style="color: var(--accent-cyan); text-decoration: none;">📥 Fetch All Models from Relay</a></span>
+                </label>
+                <input type="text" id="modelName" list="modelsDatalist" value="meta/llama-3.2-11b-vision-instruct" placeholder="e.g. meta/llama-3.2-11b-vision-instruct">
+                <datalist id="modelsDatalist">
+                    <option value="meta/llama-3.2-11b-vision-instruct">meta/llama-3.2-11b-vision-instruct (Working 200 OK)</option>
+                    <option value="deepseek-ai/deepseek-r1">deepseek-ai/deepseek-r1</option>
+                    <option value="mistralai/mistral-large-2-instruct">mistralai/mistral-large-2-instruct</option>
+                    <option value="meta/llama2-70b">meta/llama2-70b</option>
+                    <option value="ibm/granite-3.0-8b-instruct">ibm/granite-3.0-8b-instruct</option>
+                    <option value="01-ai/yi-large">01-ai/yi-large</option>
+                </datalist>
+
+                <!-- Quick Presets -->
+                <div class="preset-row">
+                    <span style="font-size: 0.72rem; color: var(--text-dim); margin-right: 4px; align-self: center;">Presets:</span>
+                    <button type="button" class="preset-chip working" onclick="setModel('meta/llama-3.2-11b-vision-instruct')">
+                        🔥 Llama 3.2 11B (Active 200)
+                    </button>
+                    <button type="button" class="preset-chip" onclick="setModel('deepseek-ai/deepseek-r1')">
+                        DeepSeek-R1
+                    </button>
+                    <button type="button" class="preset-chip" onclick="setModel('mistralai/mistral-large-2-instruct')">
+                        Mistral Large 2
+                    </button>
+                    <button type="button" class="preset-chip" onclick="setModel('google/gemma-3-4b-it')">
+                        Gemma 3 4B
+                    </button>
+                </div>
+            </div>
+
+            <!-- Prompt Input -->
+            <div class="form-group">
+                <label for="promptInput">
+                    User Message
+                    <span class="label-hint">Prompt for the model</span>
+                </label>
+                <textarea id="promptInput" rows="3" placeholder="Enter a prompt to taste test the model...">Say hello and confirm that Veer's LLM Relay is working with this model in 2 short sentences!</textarea>
+            </div>
+
+            <!-- Extra Parameters -->
+            <div class="controls-grid">
+                <div class="control-item">
+                    <span>Streaming</span>
+                    <label class="toggle-label">
+                        <input type="checkbox" id="streamToggle" checked> Live SSE
+                    </label>
+                </div>
+                <div class="control-item">
+                    <span>Max Tokens</span>
+                    <input type="text" id="maxTokens" value="150" style="padding: 4px 8px; height: 30px;">
+                </div>
+                <div class="control-item">
+                    <span>Temperature</span>
+                    <input type="text" id="temperature" value="0.2" style="padding: 4px 8px; height: 30px;">
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="button-bar">
+                <button class="btn btn-primary" id="btnTestModel" onclick="runTasteTest()">
+                    <span>🚀 Taste Test Model</span>
+                </button>
+                <button class="btn btn-secondary" onclick="clearConsole()">
+                    Clear
+                </button>
+            </div>
+
+            <!-- Dynamic cURL helper -->
+            <details style="font-size: 0.8rem; color: var(--text-muted); cursor: pointer;">
+                <summary style="user-select: none;">📋 View Generated cURL Snippet</summary>
+                <div class="code-snippet-box" style="margin-top: 8px;">
+                    <button class="copy-btn" onclick="copyCurlSnippet()">Copy</button>
+                    <pre id="curlSnippet"></pre>
+                </div>
+            </details>
+        </section>
+
+        <!-- Right: Live Result Console -->
+        <section class="panel">
+            <div class="panel-header">
+                <div>
+                    <h2 class="panel-title">📡 Live Response Console</h2>
+                    <p class="panel-subtitle">Real-time output, streaming chunks, and latency diagnostics</p>
+                </div>
+                <div class="console-meta">
+                    <span class="badge badge-idle" id="statusBadge">READY</span>
+                    <span class="badge badge-idle" id="latencyBadge">-- ms</span>
+                </div>
+            </div>
+
+            <!-- Console View Tabs -->
+            <div class="tab-bar">
+                <button class="tab-btn active" id="tabFormatted" onclick="switchTab('formatted')">Chat Output</button>
+                <button class="tab-btn" id="tabRaw" onclick="switchTab('raw')">Raw JSON / Stream</button>
+            </div>
+
+            <!-- Output Box -->
+            <div class="output-box" id="outputConsole">
+                <div class="placeholder-text" id="placeholder">
+                    Click "Taste Test Model" to run a live chat query against your relay gateway.<br>
+                    Responses and streaming tokens will stream here in real-time.
+                </div>
+            </div>
+
+            <!-- Metric Stats Footer -->
+            <div class="metric-footer">
+                <div class="metric-group">
+                    <div class="metric-item">Tokens: <span id="tokenMetric">--</span></div>
+                    <div class="metric-item">Model: <span id="modelMetric">None</span></div>
+                </div>
+                <div>
+                    <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.72rem;" onclick="copyOutputText()">
+                        📋 Copy Output
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Bottom Reference Cards -->
+    <div class="info-grid">
+        <div class="info-card">
+            <div class="info-title">Chat Endpoint</div>
+            <div class="info-value">POST /v1/chat/completions</div>
         </div>
-
-        <div class="footer">
-            Lightweight OpenAI-compatible proxy · Secure · Fast
+        <div class="info-card">
+            <div class="info-title">Models Endpoint</div>
+            <div class="info-value">GET /v1/models</div>
+        </div>
+        <div class="info-card">
+            <div class="info-title">Stats & Health</div>
+            <div class="info-value">GET /stats & /health</div>
+        </div>
+        <div class="info-card">
+            <div class="info-title">Active Upstream</div>
+            <div class="info-value">NVIDIA NIM (OpenAI Compliant)</div>
         </div>
     </div>
+
+    <footer>
+        LLM Relay Gateway · Built for low-latency AI proxying · Designed for @veerthesani
+    </footer>
+</div>
+
+<script>
+    // State
+    let currentRawData = "";
+    let currentFormattedText = "";
+    let activeTab = "formatted";
+    let isRequesting = false;
+
+    // Default Gateway URL Setup
+    window.addEventListener('DOMContentLoaded', () => {
+        const urlInput = document.getElementById('gatewayUrl');
+        if (!urlInput.value) {
+            // If served via HTTP/HTTPS, use origin; if opened locally as file, use Render URL
+            if (window.location.protocol.startsWith('http')) {
+                urlInput.value = window.location.origin;
+            } else {
+                urlInput.value = 'https://llm-relay-veer.onrender.com';
+            }
+        }
+        updateCurlSnippet();
+        checkHealthAndStats();
+
+        // Listeners for snippet update
+        ['gatewayUrl', 'proxyKey', 'modelName', 'promptInput', 'streamToggle', 'maxTokens', 'temperature'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('input', updateCurlSnippet);
+        });
+    });
+
+    function setModel(name) {
+        document.getElementById('modelName').value = name;
+        updateCurlSnippet();
+    }
+
+    function getCleanGatewayUrl() {
+        let val = document.getElementById('gatewayUrl').value.trim();
+        if (!val) val = window.location.origin;
+        return val.replace(/\/+$/, '');
+    }
+
+    function updateCurlSnippet() {
+        const base = getCleanGatewayUrl();
+        const key = document.getElementById('proxyKey').value.trim();
+        const model = document.getElementById('modelName').value.trim();
+        const prompt = document.getElementById('promptInput').value.trim().replace(/"/g, '\\"');
+        const stream = document.getElementById('streamToggle').checked;
+        const maxTokens = parseInt(document.getElementById('maxTokens').value, 10) || 100;
+        const temp = parseFloat(document.getElementById('temperature').value) || 0.2;
+
+        const snippet = `curl -X POST "${base}/v1/chat/completions" \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer ${key}" \\
+  -d '{
+    "model": "${model}",
+    "messages": [{"role": "user", "content": "${prompt}"}],
+    "temperature": ${temp},
+    "max_tokens": ${maxTokens},
+    "stream": ${stream}
+  }'`;
+
+        const el = document.getElementById('curlSnippet');
+        if (el) el.textContent = snippet;
+    }
+
+    function copyCurlSnippet() {
+        const text = document.getElementById('curlSnippet').textContent;
+        navigator.clipboard.writeText(text).then(() => alert('cURL snippet copied to clipboard!'));
+    }
+
+    function copyOutputText() {
+        if (!currentFormattedText && !currentRawData) {
+            alert('No output to copy yet.');
+            return;
+        }
+        const textToCopy = activeTab === 'raw' ? currentRawData : currentFormattedText;
+        navigator.clipboard.writeText(textToCopy).then(() => alert('Response copied!'));
+    }
+
+    // Health & Stats Check
+    async function checkHealthAndStats() {
+        const base = getCleanGatewayUrl();
+        const healthBadge = document.getElementById('gatewayHealthBadge');
+        const healthDot = document.getElementById('healthDot');
+        const healthText = document.getElementById('healthText');
+        const uptimePill = document.getElementById('uptimePill');
+
+        healthText.textContent = "PINGING...";
+        healthDot.style.backgroundColor = "var(--accent-amber)";
+
+        try {
+            const start = performance.now();
+            const res = await fetch(`${base}/health`);
+            const latency = Math.round(performance.now() - start);
+
+            if (res.ok) {
+                const data = await res.json();
+                healthText.textContent = `ONLINE (${latency}ms)`;
+                healthDot.style.backgroundColor = "var(--accent-green)";
+                uptimePill.textContent = `Uptime: ${formatUptime(data.uptimeSeconds || 0)}`;
+            } else {
+                healthText.textContent = `HTTP ${res.status}`;
+                healthDot.style.backgroundColor = "var(--accent-red)";
+            }
+        } catch (err) {
+            healthText.textContent = "OFFLINE / ERR";
+            healthDot.style.backgroundColor = "var(--accent-red)";
+        }
+    }
+
+    function formatUptime(seconds) {
+        if (!seconds) return '0s';
+        const d = Math.floor(seconds / (3600*24));
+        const h = Math.floor(seconds % (3600*24) / 3600);
+        const m = Math.floor(seconds % 3600 / 60);
+        const s = Math.floor(seconds % 60);
+        if (d > 0) return `${d}d ${h}h`;
+        if (h > 0) return `${h}h ${m}m`;
+        return `${m}m ${s}s`;
+    }
+
+    // Fetch All Available Models from Relay
+    async function loadAvailableModels() {
+        const base = getCleanGatewayUrl();
+        const key = document.getElementById('proxyKey').value.trim();
+        const dataList = document.getElementById('modelsDatalist');
+
+        showError(null);
+        alert(`Fetching models from ${base}/v1/models...`);
+
+        try {
+            const res = await fetch(`${base}/v1/models`, {
+                headers: { 'Authorization': `Bearer ${key}` }
+            });
+
+            if (!res.ok) {
+                const errText = await res.text();
+                throw new Error(`Failed to load models (HTTP ${res.status}): ${errText}`);
+            }
+
+            const json = await res.json();
+            const models = (json.data || []).map(m => m.id);
+            if (models.length === 0) {
+                alert('No models returned by upstream.');
+                return;
+            }
+
+            dataList.innerHTML = '';
+            models.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m;
+                opt.textContent = m;
+                dataList.appendChild(opt);
+            });
+
+            alert(`Successfully loaded ${models.length} models into the dropdown!`);
+        } catch (err) {
+            showError('Model Listing Error', err.message);
+        }
+    }
+
+    function showError(title, msg) {
+        const banner = document.getElementById('errorBanner');
+        if (!title) {
+            banner.classList.remove('show');
+            return;
+        }
+        document.getElementById('errorTitle').textContent = title;
+        document.getElementById('errorMessage').textContent = msg;
+        banner.classList.add('show');
+    }
+
+    function setStatusBadge(status, text) {
+        const badge = document.getElementById('statusBadge');
+        badge.className = 'badge';
+        if (status === 'loading') {
+            badge.classList.add('badge-loading');
+            badge.textContent = text || 'SENDING...';
+        } else if (status === 200) {
+            badge.classList.add('badge-200');
+            badge.textContent = text || '200 OK';
+        } else if (status === 'idle') {
+            badge.classList.add('badge-idle');
+            badge.textContent = text || 'READY';
+        } else {
+            badge.classList.add('badge-error');
+            badge.textContent = text || `HTTP ${status}`;
+        }
+    }
+
+    function switchTab(tab) {
+        activeTab = tab;
+        document.getElementById('tabFormatted').classList.toggle('active', tab === 'formatted');
+        document.getElementById('tabRaw').classList.toggle('active', tab === 'raw');
+        renderConsole();
+    }
+
+    function renderConsole() {
+        const consoleEl = document.getElementById('outputConsole');
+        if (!currentFormattedText && !currentRawData) {
+            consoleEl.innerHTML = `
+                <div class="placeholder-text">
+                    Click "Taste Test Model" to run a live chat query against your relay gateway.<br>
+                    Responses and streaming tokens will stream here in real-time.
+                </div>`;
+            return;
+        }
+
+        if (activeTab === 'raw') {
+            consoleEl.textContent = currentRawData;
+        } else {
+            consoleEl.innerHTML = escapeHtml(currentFormattedText) + (isRequesting ? '<span class="cursor-blink"></span>' : '');
+        }
+        consoleEl.scrollTop = consoleEl.scrollHeight;
+    }
+
+    function escapeHtml(str) {
+        return str
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+    }
+
+    function clearConsole() {
+        currentRawData = "";
+        currentFormattedText = "";
+        showError(null);
+        setStatusBadge('idle', 'READY');
+        document.getElementById('latencyBadge').textContent = '-- ms';
+        document.getElementById('tokenMetric').textContent = '--';
+        document.getElementById('modelMetric').textContent = 'None';
+        renderConsole();
+    }
+
+    // MAIN TASTE TEST FUNCTION
+    async function runTasteTest() {
+        if (isRequesting) return;
+
+        const base = getCleanGatewayUrl();
+        const key = document.getElementById('proxyKey').value.trim();
+        const model = document.getElementById('modelName').value.trim();
+        const prompt = document.getElementById('promptInput').value.trim();
+        const stream = document.getElementById('streamToggle').checked;
+        const maxTokens = parseInt(document.getElementById('maxTokens').value, 10) || 100;
+        const temperature = parseFloat(document.getElementById('temperature').value) || 0.2;
+
+        if (!model) {
+            showError('Missing Model', 'Please enter or select a model name.');
+            return;
+        }
+        if (!prompt) {
+            showError('Missing Prompt', 'Please enter a message to test.');
+            return;
+        }
+
+        showError(null);
+        clearConsole();
+        isRequesting = true;
+        const testBtn = document.getElementById('btnTestModel');
+        testBtn.disabled = true;
+        testBtn.innerHTML = '<span>⏳ Tasting Model...</span>';
+
+        setStatusBadge('loading', 'CONNECTING...');
+        document.getElementById('modelMetric').textContent = model;
+
+        const startTime = performance.now();
+        const endpoint = `${base}/v1/chat/completions`;
+
+        const requestBody = {
+            model: model,
+            messages: [{ role: "user", content: prompt }],
+            temperature: temperature,
+            max_tokens: maxTokens,
+            stream: stream
+        };
+
+        try {
+            const response = await fetch(endpoint, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${key}`
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            const initialLatency = Math.round(performance.now() - startTime);
+            document.getElementById('latencyBadge').textContent = `${initialLatency} ms`;
+
+            // Error responses handling
+            if (!response.ok) {
+                setStatusBadge(response.status, `HTTP ${response.status}`);
+                const errorText = await response.text();
+                currentRawData = errorText;
+
+                let parsedError = {};
+                try {
+                    parsedError = JSON.parse(errorText);
+                } catch { }
+
+                let explanation = `HTTP ${response.status} Error: `;
+                if (response.status === 401) {
+                    explanation += "Unauthorized. The gateway proxy key is invalid. Check your PROXY_KEYS in Render/env (e.g. 'sky').";
+                } else if (response.status === 410) {
+                    explanation += "Model End-Of-Life. NVIDIA retired this model ID. Try 'meta/llama-3.2-11b-vision-instruct' instead!";
+                } else if (response.status === 404) {
+                    explanation += (parsedError.detail || parsedError.error?.message || "Model function not found on NVIDIA NIM for this key.");
+                } else {
+                    explanation += (parsedError.error?.message || parsedError.detail || errorText);
+                }
+
+                currentFormattedText = `❌ Error [${response.status}]\n\n${explanation}`;
+                showError(`Upstream Error (${response.status})`, explanation);
+                renderConsole();
+                return;
+            }
+
+            setStatusBadge(200, stream ? 'STREAMING...' : '200 OK');
+
+            if (!stream) {
+                // Non-streaming JSON response
+                const data = await response.json();
+                currentRawData = JSON.stringify(data, null, 2);
+                
+                const content = data.choices?.[0]?.message?.content || "(Empty response)";
+                currentFormattedText = content;
+
+                if (data.usage) {
+                    document.getElementById('tokenMetric').textContent = 
+                        `${data.usage.total_tokens || 0} (${data.usage.prompt_tokens}+${data.usage.completion_tokens})`;
+                }
+
+                const totalLatency = Math.round(performance.now() - startTime);
+                document.getElementById('latencyBadge').textContent = `${totalLatency} ms`;
+                setStatusBadge(200, '200 OK');
+                renderConsole();
+            } else {
+                // Streaming EventSource / ReadableStream
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder("utf-8");
+                let done = false;
+                let accumulatedChunks = "";
+                let accumulatedText = "";
+                let tokenCount = 0;
+
+                while (!done) {
+                    const { value, done: streamDone } = await reader.read();
+                    done = streamDone;
+                    if (value) {
+                        const chunk = decoder.decode(value, { stream: !done });
+                        accumulatedChunks += chunk;
+                        currentRawData = accumulatedChunks;
+
+                        // Parse SSE lines
+                        const lines = chunk.split("\n");
+                        for (const line of lines) {
+                            const trimmed = line.trim();
+                            if (!trimmed || !trimmed.startsWith("data:")) continue;
+                            const payload = trimmed.slice(5).trim();
+                            if (payload === "[DONE]") continue;
+
+                            try {
+                                const parsed = JSON.parse(payload);
+                                const delta = parsed.choices?.[0]?.delta?.content || "";
+                                if (delta) {
+                                    accumulatedText += delta;
+                                    tokenCount++;
+                                    currentFormattedText = accumulatedText;
+                                    renderConsole();
+                                }
+                            } catch {
+                                // Skip malformed or split JSON lines
+                            }
+                        }
+                    }
+                }
+
+                const totalLatency = Math.round(performance.now() - startTime);
+                document.getElementById('latencyBadge').textContent = `${totalLatency} ms`;
+                document.getElementById('tokenMetric').textContent = `~${tokenCount} tokens`;
+                setStatusBadge(200, 'STREAM DONE');
+                isRequesting = false;
+                renderConsole();
+            }
+        } catch (err) {
+            setStatusBadge('error', 'NETWORK ERR');
+            showError('Network / Fetch Error', err.message);
+            currentFormattedText = `❌ Network Error: ${err.message}`;
+            renderConsole();
+        } finally {
+            isRequesting = false;
+            testBtn.disabled = false;
+            testBtn.innerHTML = '<span>🚀 Taste Test Model</span>';
+        }
+    }
+</script>
 </body>
 </html>
