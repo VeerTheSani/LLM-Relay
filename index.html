@@ -1249,11 +1249,17 @@ client = OpenAI(
                 if (response.status === 401) {
                     explanation += "Unauthorized. The gateway proxy key is invalid. Check your PROXY_KEYS in Render/env (e.g. 'sky').";
                 } else if (response.status === 410) {
-                    explanation += "Model End-Of-Life. NVIDIA retired this model ID. Try 'meta/llama-3.2-11b-vision-instruct' instead!";
+                    explanation += `Model End-Of-Life. NVIDIA retired '${model}'. Try 'meta/llama-3.2-11b-vision-instruct' instead!`;
                 } else if (response.status === 404) {
-                    explanation += (parsedError.detail || parsedError.error?.message || "Model function not found on NVIDIA NIM for this key.");
+                    explanation += (parsedError.detail || parsedError.error?.message || `Model function '${model}' was not found on NVIDIA NIM for this key.`);
+                } else if (response.status === 502 || response.status === 503 || response.status === 504) {
+                    explanation += `Upstream Provider Unavailable (${response.status}). NVIDIA's backend container for model '${model}' is currently down, overloaded, or timing out. Try an active model like 'meta/llama-3.2-11b-vision-instruct'.`;
                 } else {
-                    explanation += (parsedError.error?.message || parsedError.detail || errorText);
+                    if (errorText.includes('<html') || errorText.includes('<!DOCTYPE')) {
+                        explanation += `Upstream returned an HTML error (${response.status}). The upstream server for this model failed to respond.`;
+                    } else {
+                        explanation += (parsedError.error?.message || parsedError.detail || errorText);
+                    }
                 }
 
                 currentFormattedText = `❌ Error [${response.status}]\n\n${explanation}`;
