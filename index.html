@@ -771,7 +771,7 @@
                 </div>
                 <div class="control-item">
                     <span>Max Tokens</span>
-                    <input type="text" id="maxTokens" value="150" style="padding: 4px 8px; height: 30px;">
+                    <input type="text" id="maxTokens" value="500" style="padding: 4px 8px; height: 30px;">
                 </div>
                 <div class="control-item">
                     <span>Temperature</span>
@@ -1275,7 +1275,10 @@ client = OpenAI(
                 const data = await response.json();
                 currentRawData = JSON.stringify(data, null, 2);
                 
-                const content = data.choices?.[0]?.message?.content || "(Empty response)";
+                let content = data.choices?.[0]?.message?.content || "";
+                if (!content.trim()) {
+                    content = `⚠️ Empty Response Detected\n\n💡 Reason: Model '${model}' hit its token limit (${maxTokens} tokens) during its internal thinking phase while REASONING_MODE=hide.\n\n👉 Solution: Increase 'Max Tokens' to 500+ or set REASONING_MODE=show on Render.`;
+                }
                 currentFormattedText = content;
 
                 if (data.usage) {
@@ -1326,6 +1329,10 @@ client = OpenAI(
                             }
                         }
                     }
+                }
+
+                if (!accumulatedText.trim()) {
+                    currentFormattedText = `⚠️ Empty Response Detected (0 visible characters)\n\n💡 Reason:\nModel '${model}' is an extended reasoning model (like GLM-5 or DeepSeek).\nIt generates internal thought tokens in 'reasoning_content' before producing its actual answer.\nBecause your relay's REASONING_MODE is set to 'hide' and Max Tokens was set to ${maxTokens}, the model reached its token limit while still inside its thinking phase!\n\n👉 How to Fix:\n1. Increase 'Max Tokens' (e.g. 500 to 1000) so it has room to finish thinking and generate the answer.\n2. Or set REASONING_MODE=show in your Render dashboard environment variables to stream the thinking tokens live.`;
                 }
 
                 const totalLatency = Math.round(performance.now() - startTime);
