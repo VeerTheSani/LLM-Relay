@@ -707,9 +707,14 @@
                 <div class="form-group">
                     <label for="proxyKey">
                         Proxy Key
-                        <span class="label-hint">Bearer Auth</span>
+                        <span class="label-hint">Saved in browser only</span>
                     </label>
-                    <input type="password" id="proxyKey" value="sky" placeholder="sky">
+                    <div style="position: relative; display: flex; align-items: center;">
+                        <input type="password" id="proxyKey" value="" placeholder="Enter your proxy key..." style="padding-right: 38px;" autocomplete="off">
+                        <button type="button" id="toggleKeyBtn" onclick="toggleKeyVisibility()" style="position: absolute; right: 8px; background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; font-size: 0.95rem;" title="Show/Hide Key">
+                            👁️
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -790,6 +795,15 @@
                 <div class="code-snippet-box" style="margin-top: 8px;">
                     <button class="copy-btn" onclick="copyCurlSnippet()">Copy</button>
                     <pre id="curlSnippet"></pre>
+                </div>
+            </details>
+
+            <!-- Hermes Agent & AI Client Setup -->
+            <details style="font-size: 0.8rem; color: var(--text-muted); cursor: pointer; margin-top: 6px;">
+                <summary style="user-select: none;">🤖 Hermes Agent & Client Config</summary>
+                <div class="code-snippet-box" style="margin-top: 8px;">
+                    <button class="copy-btn" onclick="copyHermesSnippet()">Copy</button>
+                    <pre id="hermesSnippet"></pre>
                 </div>
             </details>
         </section>
@@ -879,19 +893,50 @@
                 urlInput.value = 'https://llm-relay-veer.onrender.com';
             }
         }
+
+        // Restore saved proxy key from browser's local storage (private to this device)
+        const savedKey = localStorage.getItem('llm_relay_proxy_key');
+        const keyInput = document.getElementById('proxyKey');
+        if (savedKey) {
+            keyInput.value = savedKey;
+        }
+
+        keyInput.addEventListener('input', (e) => {
+            localStorage.setItem('llm_relay_proxy_key', e.target.value.trim());
+            updateCurlSnippet();
+            updateHermesSnippet();
+        });
+
         updateCurlSnippet();
+        updateHermesSnippet();
         checkHealthAndStats();
 
         // Listeners for snippet update
-        ['gatewayUrl', 'proxyKey', 'modelName', 'promptInput', 'streamToggle', 'maxTokens', 'temperature'].forEach(id => {
+        ['gatewayUrl', 'modelName', 'promptInput', 'streamToggle', 'maxTokens', 'temperature'].forEach(id => {
             const el = document.getElementById(id);
-            if (el) el.addEventListener('input', updateCurlSnippet);
+            if (el) el.addEventListener('input', () => {
+                updateCurlSnippet();
+                updateHermesSnippet();
+            });
         });
     });
+
+    function toggleKeyVisibility() {
+        const input = document.getElementById('proxyKey');
+        const btn = document.getElementById('toggleKeyBtn');
+        if (input.type === 'password') {
+            input.type = 'text';
+            btn.textContent = '🙈';
+        } else {
+            input.type = 'password';
+            btn.textContent = '👁️';
+        }
+    }
 
     function setModel(name) {
         document.getElementById('modelName').value = name;
         updateCurlSnippet();
+        updateHermesSnippet();
     }
 
     function getCleanGatewayUrl() {
@@ -902,8 +947,8 @@
 
     function updateCurlSnippet() {
         const base = getCleanGatewayUrl();
-        const key = document.getElementById('proxyKey').value.trim();
-        const model = document.getElementById('modelName').value.trim();
+        const key = document.getElementById('proxyKey').value.trim() || 'YOUR_PROXY_KEY';
+        const model = document.getElementById('modelName').value.trim() || 'meta/llama-3.2-11b-vision-instruct';
         const prompt = document.getElementById('promptInput').value.trim().replace(/"/g, '\\"');
         const stream = document.getElementById('streamToggle').checked;
         const maxTokens = parseInt(document.getElementById('maxTokens').value, 10) || 100;
@@ -927,6 +972,36 @@
     function copyCurlSnippet() {
         const text = document.getElementById('curlSnippet').textContent;
         navigator.clipboard.writeText(text).then(() => alert('cURL snippet copied to clipboard!'));
+    }
+
+    function updateHermesSnippet() {
+        const base = getCleanGatewayUrl();
+        const key = document.getElementById('proxyKey').value.trim() || 'YOUR_PROXY_KEY';
+        const model = document.getElementById('modelName').value.trim() || 'meta/llama-3.2-11b-vision-instruct';
+
+        const snippet = `# === Environment Variables for Hermes Agent / OpenAI Clients ===
+OPENAI_BASE_URL="${base}/v1"
+OPENAI_API_KEY="${key}"
+MODEL="${model}"
+
+# === Python Code (OpenAI SDK / Hermes Agent) ===
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="${base}/v1",
+    api_key="${key}"
+)
+
+# === If Hermes Agent requires Full URL ===
+# Proxy URL: ${base}/v1/chat/completions`;
+
+        const el = document.getElementById('hermesSnippet');
+        if (el) el.textContent = snippet;
+    }
+
+    function copyHermesSnippet() {
+        const text = document.getElementById('hermesSnippet').textContent;
+        navigator.clipboard.writeText(text).then(() => alert('Hermes configuration copied to clipboard!'));
     }
 
     function copyOutputText() {
@@ -985,6 +1060,12 @@
         const base = getCleanGatewayUrl();
         const key = document.getElementById('proxyKey').value.trim();
         const dataList = document.getElementById('modelsDatalist');
+
+        if (!key) {
+            showError('Missing Proxy Key', 'Please enter your Proxy Key first to fetch available models.');
+            document.getElementById('proxyKey').focus();
+            return;
+        }
 
         showError(null);
         alert(`Fetching models from ${base}/v1/models...`);
@@ -1105,6 +1186,11 @@
         const maxTokens = parseInt(document.getElementById('maxTokens').value, 10) || 100;
         const temperature = parseFloat(document.getElementById('temperature').value) || 0.2;
 
+        if (!key) {
+            showError('Missing Proxy Key', 'Please enter your Proxy Key to authenticate (the PROXY_KEYS value configured in Render).');
+            document.getElementById('proxyKey').focus();
+            return;
+        }
         if (!model) {
             showError('Missing Model', 'Please enter or select a model name.');
             return;
